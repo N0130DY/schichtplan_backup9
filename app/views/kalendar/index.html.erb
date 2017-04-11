@@ -1,0 +1,303 @@
+<head>
+  <!------------------------------------ CSS für Tasks = "Offen" ------------------------------------------------------>
+  <style type="text/css">
+    .meeting_task{
+      border:2px solid #FFFAFA;
+      color: #FF0000;
+      background: #FF6347;
+    }
+  </style>
+</head>
+
+<h1>Schichtplan</h1>
+
+<!---------------------------- HTML der Filter-Checkboxen ------------------------------------------------------------->
+<div style="height:50px; padding:15px;">
+  <div class="filters_wrapper" id="filters_wrapper">
+    <span>Filtern nach Status</span>
+    <label>
+      <input type="checkbox" name="1" checked="">
+      Zugeteilt
+    </label>
+    <label>
+      <input type="checkbox" name="2" checked="">
+      Offen
+    </label>
+  </div>
+</div>
+
+
+<!-- -------------------------------Sortierbutton: Name, Duration ----------------------------------------------------->
+<input type="button" class="btn btn-info btn-sm" value="Sortieren nach Tätigkeit" onclick="sortByName()">
+<input type="button" class="btn btn-info btn-sm" value="Sortieren nach Arbeitszeit" onclick="sortByDuration()">
+<input type="button" class="btn btn-info btn-sm" value="Sortieren nach Zeit" onclick="sortByTime()">
+<input type="button" class="btn btn-info btn-sm" value="Sortieren nach Arbeiter" onclick="sortByUser()">
+
+<!------------Initialisieren des Gantt-Objekts mittels der Bibliothek (siehe Application.html.erb) -------------------->
+<div id="gantt_here" style='width:100%; height:400px;'></div>
+
+
+<script>
+
+
+
+    // Checkboxfilterung------------------------------------------------------------------------------------------------
+    var filter_inputs = document.getElementById("filters_wrapper").getElementsByTagName("input");
+    for (var i=0; i<filter_inputs.length; i++) {
+        var filter_input = filter_inputs[i];
+
+        filter_input.onchange = function() {
+            gantt.refreshData();
+        }
+    }
+    // Falls mehrere Ebenen im Tree vorhanden sind
+
+    function hasStatus(parent, status){
+        if(gantt.getTask(parent).status == status)
+            return true;
+
+        var child = gantt.getChildren(parent);
+        for(var i = 0; i < child.length; i++){
+            if(hasStatus(child[i], status))
+                return true;
+        }
+        return false;
+    }
+
+    // Verknüpfen mit EventHandler um die Filterobjekte zu updaten und die Daten auszugeben/refreshen
+
+    gantt.attachEvent("onBeforeTaskDisplay", function(id, task){
+        for (var i=0; i<filter_inputs.length; i++) {
+            var filter_input = filter_inputs[i];
+
+            if (filter_input.checked){
+                if (hasStatus(id, filter_input.name)){
+                    return true;
+                }
+            }
+
+        }
+        return false;
+    });
+
+    // Buttonfilterung nach: -------------------------------------------------------------------------------------------
+    // Name -> Tätigkeit
+    var n_direction = false;
+    function sortByName(){
+        if (n_direction){
+            gantt.sort("text",false);
+        } else {
+            gantt.sort("text",true);
+        }
+        n_direction = !n_direction;
+    };
+    // Arbeitszeit
+    var d_direction = false;
+    function sortByDuration(){
+        if (d_direction){
+            gantt.sort("duration",false);
+        } else {
+            gantt.sort("duration",true);
+        }
+        d_direction = !d_direction;
+    };
+    // Zeit
+    var t_direction = false;
+    function sortByTime(){
+        if (t_direction){
+            gantt.sort("start_date",false);
+        } else {
+            gantt.sort("start_date",true);
+        }
+        t_direction = !t_direction;
+    };
+    // Arbeiter
+    var u_direction = false;
+    function sortByUser() {
+        if (u_direction) {
+            gantt.sort("user", false);
+        } else {
+            gantt.sort("user")
+        }
+    }
+
+
+
+    // Column - Beschreibung der Linken Seite---------------------------------------------------------------------------
+    gantt.config.columns = [
+        {name:"text",       label:"Tätigkeit",  width:"*", tree:true },
+        {name:"start_date", label:"Start", align: "center" },
+        //{name:"duration",   label:"Arbeitszeit",   align: "center" },
+        {name:"user",       label:"Arbeiter"},       // Prototyp--------------------------------------------------------
+        {name:"add",        label:"",           width:30 }
+    ];
+
+    // Dynamisches Laden der Zweige der Columns-------------------------------------------------------------------------
+    gantt.config.branch_loading = true;
+
+    // Lightbox---------------------------------------------------------------------------------------------------------
+    var opts = [
+        { key:1, label: "Zugeteilt"},
+        { key:2, label: "Offen"}
+    ];
+
+    gantt.config.lightbox.sections = [
+        {name: "description", height: 24, map_to: "text", type: "textarea", focus: true},
+      /*{name: "user", height: 22, map_to: "user", type: "select", options: [
+       {key:"", label: "Select a worker..."},
+       {key:"John", label: "John"},
+       {key:"Mike", label: "Mike"},
+       {key:"Anna", label: "Anna"}]},*/
+        {name: "user", height: 24, map_to: "user", type: "textarea"}, // Prototyp---------------------------------------
+        {name:"status", type:"select", map_to:"status", options:opts, default_value: "2"}, // default_value für die Lightbox, nicht für das Event
+        {name: "time", type: "duration", map_to: "auto"}
+    ];
+    // Beschreibung in der Lightbox für "Status" -----------------------------------------------------------------------
+    gantt.locale.labels["section_status"] = "Status";
+    gantt.locale.labels["section_user"] = "Arbeiter";
+
+    // Fehlermeldungen und Speichern auf "Zugeteilt"--------------------------------------------------------------------
+    gantt.attachEvent("onLightboxSave", function(id, item){
+        if(!item.text){
+            gantt.message({type:"error", text:"Eingabe von Tätigkeit!"});
+            return false;
+        }
+        // Zugeilt -> Action
+        if(item.status == "1"){
+            gantt.message({type:"error", text:"Email versendet!"});
+        }
+        return true;
+    });
+
+    // Nachricht bei Erstellung einer Task -----------------------------------------------------------------------------
+    gantt.attachEvent("onTaskCreated", function(task){
+        gantt.message({text: "Nachricht versendet", expire: -1});
+        return true;
+    });
+
+    // Hinweise - Nachricht bei Aufruf der Seite -----------------------------------------------------------------------
+    gantt.message({
+        text:"Die Arbeitszeit ist in <b>Stunden</b> bestimmt",
+        expire:-1
+    });
+    gantt.message({
+        text:"<b> Rote </b> Balken stehen für den Status 'offen'. <br><b> Blaue </b> Balken hingegen stehen für 'Zugeteilt' und lassen" +
+        " den Mitarbeiter wissen, dass er für eine Schicht zugeteilt wurde.",
+        expire:-1
+    })
+
+
+    // Drag und Drop im Column------------------------------------------------------------------------------------------
+    gantt.config.order_branch = true;
+    gantt.config.order_branch_free = true;
+
+    // Tooltipps--------------------------------------------------------------------------------------------------------
+    gantt.templates.tooltip_text = function(start,end,task){
+        return "<b>Task:</b> "+task.text+"<br/><b>Arbeitszeit:</b> " + task.duration+ "<b> Stunden </b>"+"<br/><b>Start Time:</b> " + task.start_date;
+    };
+
+    // Beschreibung der "blauen Kästchen" - die Tasks-------------------------------------------------------------------
+    gantt.templates.task_text=function(start,end,task){
+        return "<b>Text:</b> "+task.text+",<b> Arbeitszeit:</b> "+task.duration + "<b> Stunden </b>";
+    };
+
+
+    // Taskfarbe.status = "Offen" => Farbe --------------------------------------------------------------------------------
+    gantt.templates.task_class = function(start, end, task){
+        if(task.status == "2"){
+            return "meeting_task";
+        }
+        return "";
+    };
+
+
+
+
+    // Konfigurierungen der Skalierungen--------------------------------------------------------------------------------
+    gantt.config.scale_unit = "hour";          // Erste Skala => Monat
+    gantt.config.step = 1;
+    gantt.config.date_scale = "%G";           // Anzeige der ersten Skala => Monat und Jahr
+    gantt.config.scale_height = 75;           // Höhe der Skalen
+    gantt.config.min_column_width = 20;
+    gantt.config.duration_step = 60;          // Alle 60 min = 1 Duration
+    gantt.config.duration_unit = "minute";    // Einheit der Duration
+
+    // Zweite Skalierung
+    gantt.config.subscales = [
+        {unit:"day", step:1, date : "%j %F, %l"}
+    ];
+
+
+    // Anzeigen der Daten bei Drag&Drop der Tasks-----------------------------------------------------------------------
+    var dateToStr = gantt.date.date_to_str("%j %F %H:%i");
+
+    // Daten der linken Seite
+
+    gantt.templates.leftside_text = function(start, end, task){
+        var state = gantt.getState(),
+            modes = gantt.config.drag_mode;
+
+        if(state.drag_id == task.id){
+            if(state.drag_mode == modes.move || (state.drag_mode == modes.resize && state.drag_from_start)){
+                return dateToStr(gantt.roundDate(start));
+            }
+        }
+
+        return "";
+    };
+
+    // Daten der rechten Seite
+
+    gantt.templates.rightside_text = function(start, end, task){
+        var state = gantt.getState(),
+            modes = gantt.config.drag_mode;
+        if(state.drag_id == task.id){
+            if(state.drag_mode == modes.move || (state.drag_mode == modes.resize && !state.drag_from_start)){
+                return dateToStr(gantt.roundDate(end));
+            }
+        }
+        return "";
+    };
+
+
+
+
+    // Highlighten einer Zeile beim Anclicken---------------------------------------------------------------------------
+    var selected_column = null;
+    gantt.attachEvent("onScaleClick", function (e, date) {
+        selected_column = date;
+        var pos = gantt.getScrollState();
+        gantt.render();
+        gantt.scrollTo(pos.x, pos.y);
+    });
+    function is_selected_column (column_date){
+        if(selected_column && column_date.valueOf() == selected_column.valueOf()){
+            return true;
+        }
+        return false;
+    }
+    gantt.templates.scale_cell_class = function (date) {
+        if(is_selected_column(date))
+            return "highlighted-column";
+    };
+    gantt.templates.task_cell_class = function (item, date) {
+        if(is_selected_column(date))
+            return "highlighted-column";
+    };
+
+
+    // Standard Datenformat (Datum), für die Daten der DB---------------------------------------------------------------
+    gantt.config.xml_date="%Y-%m-%d %H:%i";
+
+    // Initialisieren des Gantt-Objekts---------------------------------------------------------------------------------
+    gantt.init("gantt_here");
+
+    // Laden der Daten ins View-----------------------------------------------------------------------------------------
+    gantt.load("<%= data_path %>");
+    var dp = new dataProcessor("<%= data_path %>");
+    dp.init(gantt);
+    dp.setTransactionMode("REST");
+
+
+
+</script>

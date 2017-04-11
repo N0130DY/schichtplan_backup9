@@ -1,0 +1,47 @@
+<!-- Navigation links -->
+<aside class="col-sm-2">
+  <h2>Navigation</h2>
+  <div class="list-group">
+    <a href="/start" class="list-group-item "><i class="glyphicon glyphicon-info-sign"></i> Startseite</a>
+    <a href="/ansicht" class="list-group-item"><i class="glyphicon glyphicon-calendar"></i> Schichtplan</a>
+    <a href="/zuteilungswunsch" class="list-group-item active"><i class="glyphicon glyphicon-pencil"></i> Vorschläge</a>
+  </div>
+</aside>
+
+<p>
+  <strong>Text:</strong>
+  <%= @mitarbeiter.text %>
+</p>
+
+<p>
+  <strong>Start date:</strong>
+  <%= @mitarbeiter.start_date %>
+</p>
+
+<p>
+  <strong>Duration:</strong>
+  <%= @mitarbeiter.duration %>
+</p>
+
+<p>
+  <strong>Parent:</strong>
+  <%= @mitarbeiter.parent %>
+</p>
+
+<p>
+  <strong>Status:</strong>
+  <%= @mitarbeiter.status %>
+</p>
+
+<p>
+  <strong>User:</strong>
+  <%= @mitarbeiter.user %>
+</p>
+
+<p>
+  <strong>User:</strong>
+  <%= @mitarbeiter.user_id %>
+</p>
+
+<%= link_to 'Edit', edit_mitarbeiter_path(@mitarbeiter) %> |
+<%= link_to 'Back', mitarbeiters_path %>

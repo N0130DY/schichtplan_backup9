@@ -1,0 +1,65 @@
+<%= form_for(mitarbeiter) do |f| %>
+    <% if mitarbeiter.errors.any? %>
+        <div id="error_explanation">
+          <h2><%= pluralize(mitarbeiter.errors.count, "error") %> prohibited this mitarbeiter from being saved:</h2>
+
+          <ul>
+            <% mitarbeiter.errors.full_messages.each do |message| %>
+                <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+    <% end %>
+
+    <div class="field">
+      <%= f.label :Tätigkeit %>
+      <%= f.text_field :text %>
+    </div>
+
+    <div class="field">
+      <%= f.label :Startdatum %>
+      <%= f.datetime_select :start_date %>
+    </div>
+
+    <div class="field">
+      <%= f.label :"Zeit in Stunden" %>
+      <%= f.number_field :duration %>
+    </div>
+
+    <div class="field">
+      <%= f.label :parent, class: "hidden" %>
+      <%= f.number_field :parent, :value => 0, class: "hidden" %>
+    </div>
+
+    <div class="field">
+      <%= f.label :status%>
+      <%= f.text_field :status, :value => 2%>
+    </div>
+
+    <div class="field">
+      <%= f.label :user %>
+      <%= f.text_field :user, :value => current_user.nachname %>
+    </div>
+
+    <div class="field">
+      <%= f.label :user_id, class: "hidden" %>
+      <%= f.number_field :user_id, :value => current_user.id, class: "hidden" %>
+    </div>
+
+    <div class="field">
+      <%= f.label :email, class: "hidden" %>
+      <%= f.text_field :email, :value => current_user.email, class: "hidden" %>
+    </div>
+
+
+    <%= button_tag(type: "submit", class: "btn btn-success") do %>
+        <i class="glyphicon glyphicon-edit"></i> Ändern
+    <% end %>
+    <%= link_to @mitarbeiter, class: 'btn btn-primary' do%>
+        <i class="glyphicon glyphicon-eye-open"></i> Ansicht
+    <% end %>
+    <%= link_to mitarbeiters_path, class: 'btn btn-danger' do%>
+        <i class="glyphicon glyphicon-remove"></i> Abbrechen
+    <% end %>
+    </div>
+<% end %>

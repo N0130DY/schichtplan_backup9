@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Schichtplan</title>
+  <%= csrf_meta_tags %>
+
+  <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track': 'reload' %>
+  <%= javascript_include_tag 'application', 'data-turbolinks-track': 'reload' %>
+
+  <%= stylesheet_link_tag 'dhtmlxgantt', media: 'all', 'data-turbolinks-track' => true %>
+  <%= javascript_include_tag 'dhtmlxgantt', 'data-turbolinks-track' => true %>
+  <%= javascript_include_tag 'ext/dhtmlxgantt_tooltip', 'data-turbolinks-track' => true %>
+</head>
+
+<body>
+<!-- Navigaionsleiste links-->
+<div class="col-sm-12">
+  <nav class="navbar navbar-light" style="background-color: #e6e6e6;">
+    <% if can? :read, User %>                                                                                           <!--falls chef, siehe cancancan models -> abilty.rb-->
+    <ul class="nav navbar-nav">
+          <li><a href="/start">Startseite</a></li>
+          <li><a href="/users">Mitarbeiter</a></li>
+          <li><a href="/plan">Schichtplan</a></li>
+          <li id="notice"><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<%= notice %></li>                                               <!--Benachrichtigungen-->
+    </ul>
+    <% else %>                                                                                                          <!-- falls mitarbeiter-->
+        <% if current_user %>
+            <ul class="nav navbar-nav">
+              <li><a href="/start">Startseite</a></li>
+              <li><a href="/ansicht">Schichtplan</a></li>
+              <li><a href="/zuteilungswunsch">Vorschläge</a></li>
+              <li id="notice"><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<%= notice %></li>                                           <!--Benachrichtigungen-->
+            </ul>
+        <% end %>
+    <% end %>
+
+    <!-- Navigationsleite rechts -->
+    <% if current_user %>                                                                                               <!--falls user-->
+      <ul class="nav navbar-nav navbar-right">                                                                          <!--Ausrichtung rechts-->
+        <li><br><span class="glyphicon glyphicon-user"> </span> Eingeloggt als <%=current_user.email%>&nbsp;&nbsp;&nbsp; </li>
+        <li><%= link_to logout_path do %>
+              <i class="glyphicon glyphicon-log-out"> </i> Logout<%end%></li>
+    <% end %>
+  </ul>
+  </nav>
+</div>
+
+<%= yield %>
+</body>
+</html>

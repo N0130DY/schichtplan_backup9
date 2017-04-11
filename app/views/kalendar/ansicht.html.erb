@@ -1,0 +1,110 @@
+<h1>Schichtplan</h1>
+
+
+<!-- -------------------------------Sortierbutton: Name, Duration ----------------------------------------------------->
+<input type="button" class="btn btn-info btn-sm" value="Sortieren nach Tätigkeit" onclick="sortByName()">
+<input type="button" class="btn btn-info btn-sm" value="Sortieren nach Arbeitszeit" onclick="sortByDuration()">
+<input type="button" class="btn btn-info btn-sm" value="Sortieren nach Zeit" onclick="sortByTime()">
+<input type="button" class="btn btn-info btn-sm" value="Sortieren nach Arbeiter" onclick="sortByUser()">
+
+<!------------Initialisieren des Gantt-Objekts mittels der Bibliothek (siehe Application.html.erb) -------------------->
+<div id="gantt_here" style='width:100%; height:400px;'></div>
+
+
+<script>
+    // Buttonfilterung nach: -------------------------------------------------------------------------------------------
+    // Name
+    var n_direction = false;
+    function sortByName(){
+        if (n_direction){
+            gantt.sort("text",false);
+        } else {
+            gantt.sort("text",true);
+        }
+        n_direction = !n_direction;
+    };
+    // Arbeitszeit
+    var d_direction = false;
+    function sortByDuration(){
+        if (d_direction){
+            gantt.sort("duration",false);
+        } else {
+            gantt.sort("duration",true);
+        }
+        d_direction = !d_direction;
+    };
+    // Zeit
+    var t_direction = false;
+    function sortByTime(){
+        if (t_direction){
+            gantt.sort("start_date",false);
+        } else {
+            gantt.sort("start_date",true);
+        }
+        t_direction = !t_direction;
+    };
+
+    // User
+    var u_direction = false;
+    function sortByUser() {
+        if (u_direction) {
+            gantt.sort("user", false);
+        } else {
+            gantt.sort("user", true);
+        }
+        u_direction = !u_direction;
+    }
+
+    // Column - Beschreibung der Linken Seite---------------------------------------------------------------------------
+    gantt.config.columns = [
+        {name:"text",       label:"Tätigkeit",  width:"*", tree:true },
+        {name:"start_date", label:"Start", align: "center" },
+        {name:"duration",   label:"Arbeitszeit",   align: "center" },
+        {name:"user",       label:"Arbeiter"}       // Prototyp--------------------------------------------------------
+    ];
+
+    // Dynamisches Laden der Zweige der Columns-------------------------------------------------------------------------
+    gantt.config.branch_loading = true;
+
+
+    // Read Only Modus -------------------------------------------------------------------------------------------------
+    gantt.config.readonly = true;
+
+
+    // Tooltipps--------------------------------------------------------------------------------------------------------
+    gantt.templates.tooltip_text = function(start,end,task){
+        return "<b>Task:</b> "+task.text+"<br/><b>Arbeitszeit:</b> " + task.duration+ "<b> Stunden </b>"+"<br/><b>Start Time:</b> " + task.start_date;
+    };
+
+    // Beschreibung der "blauen Kästchen" - die Tasks-------------------------------------------------------------------
+    gantt.templates.task_text=function(start,end,task){
+        return "<b>Text:</b> "+task.text+",<b> Arbeitszeit:</b> "+task.duration + "<b> Stunden </b>";
+    };
+
+    // Konfigurierungen der Skalierungen--------------------------------------------------------------------------------
+    gantt.config.scale_unit = "hour";          // Erste Skala => Monat
+    gantt.config.step = 1;
+    gantt.config.date_scale = "%G";           // Anzeige der ersten Skala => Monat und Jahr
+    gantt.config.scale_height = 75;           // Höhe der Skalen
+    gantt.config.min_column_width = 20;
+    gantt.config.duration_step = 60;          // Alle 60 min = 1 Duration
+    gantt.config.duration_unit = "minute";    // Einheit der Duration
+
+    // Zweite Skalierung
+    gantt.config.subscales = [
+        {unit:"day", step:1, date : "%j %F, %l"}
+    ];
+
+    // Standard Datenformat (Datum), für die Daten der DB---------------------------------------------------------------
+    gantt.config.xml_date="%Y-%m-%d %H:%i";
+
+    // Initialisieren des Gantt-Objekts---------------------------------------------------------------------------------
+    gantt.init("gantt_here");
+
+    // Laden der Daten ins View-----------------------------------------------------------------------------------------
+    gantt.load("<%= data_path %>");
+    var dp = new dataProcessor("<%= data_path %>");
+    dp.init(gantt);
+    dp.setTransactionMode("REST");
+
+</script>

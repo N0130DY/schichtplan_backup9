@@ -1,0 +1,17 @@
+<!-- Navigation links -->
+<aside class="col-sm-2">
+  <h2>Navigation</h2>
+  <div class="list-group">
+    <a href="/start" class="list-group-item "><i class="glyphicon glyphicon-info-sign"></i> Startseite</a>
+    <a href="/ansicht" class="list-group-item"><i class="glyphicon glyphicon-calendar"></i> Schichtplan</a>
+    <a href="/zuteilungswunsch" class="list-group-item active"><i class="glyphicon glyphicon-pencil"></i> Vorschläge</a>
+  </div>
+</aside>
+
+<div class="col-sm-10">
+  <h2>Zuteilungswunsch ändern</h2>
+  <br>
+  <%= render 'form', mitarbeiter: @mitarbeiter %>
+
+  <!-- Anzeige und Abbrechen in "form" versetzt-->
+</div>
